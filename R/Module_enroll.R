@@ -65,7 +65,7 @@ en_UI <- function(id) {
                h3("Accrual by Month (Total, WildType and Mutant)"),hr(),
                plotOutput(NS(id,"hist_plot")),
                hr(),
-               linebreaks(20),
+               linebreaks(15),
                tableOutput(NS(id,"head"))
 
              )
@@ -101,7 +101,15 @@ en_Server <- function(id) {
 
     output$head <- renderTable({
 
-      head(enr(), input$n)
+      enroll <- enr() %>%
+        mutate(Date=as.character(date)) %>%
+        select(Date,month,everything())
+
+      if (is.na(input$n)) n_row <- 5
+
+      else n_row <- input$n
+
+      head(enroll, n_row)
 
     })
 

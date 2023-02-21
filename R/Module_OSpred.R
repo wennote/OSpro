@@ -198,11 +198,18 @@ OS_UI <- function(id) {
           en_2 <- accrual[,c("month","WT")]
           en_3 <- accrual[,c("month","MT")]
 
-            Nsim <- as.numeric(input$num)
+          N <- accrual0 %>%
+            summarise(across(where(is.numeric),max,na.rm=TRUE))
 
-            overall <- f_OS_pred(Nsim=Nsim,N=500,hr=input$hr_total,enroll=en_1,drop=input$dropout, req.events=360,category='Overall')
-            WildType <- f_OS_pred(Nsim=Nsim,N=350,hr=input$hr_WT,enroll=en_2, drop=input$dropout, req.events=200,category='Wild Type')
-            Mutant <- f_OS_pred(Nsim=Nsim,N=150,hr=input$hr_MT,enroll=en_3, drop=input$dropout, req.events=160,category='Mutant')
+          N <- as.numeric(N)
+
+          if (is.na(input$num)) Nsim <- 2
+
+          else Nsim <- input$num
+
+            overall <- f_OS_pred(Nsim=Nsim,N=N[1],hr=input$hr_total,enroll=en_1,drop=input$dropout, req.events=360,category='Overall')
+            WildType <- f_OS_pred(Nsim=Nsim,N=N[2],hr=input$hr_WT,enroll=en_2, drop=input$dropout, req.events=200,category='Wild Type')
+            Mutant <- f_OS_pred(Nsim=Nsim,N=N[3],hr=input$hr_MT,enroll=en_3, drop=input$dropout, req.events=160,category='Mutant')
 
             overall2 <- WildType %>%
               mutate(MTOS=OS) %>%
@@ -217,6 +224,8 @@ OS_UI <- function(id) {
           })
 
           output$OS_plot <- renderPlot(width=1000, height=600,{
+
+            #if (is.null(input$num)) return()
 
             first.dt=as.Date("09/01/2022", format="%m/%d/%Y")
 
@@ -286,6 +295,8 @@ OS_UI <- function(id) {
 
 
           output$pred_tab <- renderUI({
+
+           # if (is.null(input$num)) return()
 
             first.dt=as.Date("09/01/2022", format="%m/%d/%Y")
 
