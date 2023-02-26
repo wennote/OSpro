@@ -1,5 +1,15 @@
 library('shiny')
 ############################## Variables and Functions #############################################
+### globa variables
+
+en_3 <- data.frame(month=c(0,20,23),
+                   MT=c(1,3,2))
+
+en_2 <- data.frame(month=c(0,4,6,10,14,20,23),
+                   WT=c(3,5,9,13,19,22,15))
+
+en_1 <- data.frame(month=c(0,4,6,10,12,14,20),
+                   total=c(3,5,9,11,14,19,22))
 
 
 f_ss_sim     <-  function(Nsim = 10,
@@ -45,17 +55,27 @@ f_ss_sim     <-  function(Nsim = 10,
     # enroll.T <- c(enroll.T1[enroll.T1<9], enroll.T2[enroll.T2<24], enroll.T3[enroll.T3<40],
     #               enroll.T4[enroll.T4<41], enroll.T5)[1:N]
 
-    temp <- function(x,y) {
+    temp <- function(en,N) {
 
-      vec <- x + cumsum(rexp(N,y))
+      vec2 <- list()
 
-      vec[vec < x+1]
+      for (i in 1:nrow(en)) {
+
+        x <- en[,1]
+        y <- en[,2]
+        xx <-c(x[2:length(y)],9999)
+
+        vec <- x[i] + cumsum(rexp(N,y[i]))
+
+        vec2[[i]] <- vec[vec < xx[i]]
+
+      }
+
+      return(unlist(vec2)[1:N])
 
     }
 
-    len <- map2(en[,1],en[,2], temp)
-
-    enroll.T <- unlist(len)[1:N]
+    enroll.T <- temp(en,N)
 
     # simulate loss to FU time - Exponential with rate
     lossFU.T <- rexp(N, rate = -log(1 - lossFU.prob) / lossFU.time)
@@ -194,9 +214,9 @@ OS_UI <- function(id) {
 
     en <- reactive({
 
-          en_1 <- accrual[,c("month","total")]
-          en_2 <- accrual[,c("month","WT")]
-          en_3 <- accrual[,c("month","MT")]
+          # en_1 <- accrual[,c("month","total")]
+          # en_2 <- accrual[,c("month","WT")]
+          # en_3 <- accrual[,c("month","MT")]
 
           N <- accrual0 %>%
             summarise(across(where(is.numeric),max,na.rm=TRUE))
